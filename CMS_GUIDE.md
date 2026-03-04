@@ -1,173 +1,173 @@
-# CMS Guide — Creating Courses in Sanity
+# CMS Guide
 
-## Accessing the CMS
+## Accessing Sanity Studio
+- Local: http://localhost:3000/studio
+- Production: https://superteam-academy-brown.vercel.app/studio
 
-- Development: `http://localhost:3000/studio`
-- Production: `https://[your-domain]/studio`
+## Content Structure
+```
+Course
+└── Module (ordered)
+    └── Lesson (ordered)
+        ├── Content Lesson (portable text)
+        └── Challenge Lesson (code + validation)
+```
 
-If `/studio` is unavailable, confirm:
-- `sanity.config.ts` exists in root
-- Studio route exists at `src/app/studio/[[...tool]]/page.tsx`
-- deployment environment has Sanity env variables set.
+## Creating Your First Course
 
-## Creating a Course
+### Step 1: Create Lessons First
+Bottom-up approach: create lessons first, then modules, then course.
 
-1. Open Studio -> **Courses** -> **New Course**.
-2. Fill core metadata:
-   - `Title`
-   - `Slug` (auto-generated from title)
-   - `Description`
-   - `Thumbnail` (+ `Alt Text`)
-3. Set course settings:
-   - `Difficulty` (`beginner` / `intermediate` / `advanced`)
-   - `Duration (minutes)`
-   - `XP Reward`
-   - `Track` (`fundamentals` / `defi` / `security` / `full-stack`)
-   - `Language` (`en` / `pt-BR` / `es`)
-4. Keep `isPublished = false` while editing.
-5. Add module references in `Modules` (see next section).
-6. Optional: add prerequisites in `Prerequisites`.
-7. Save draft frequently.
+#### Content lesson (field-by-field)
+Required/primary fields from `src/sanity/schemas/lesson.ts`:
+- `title` - lesson display name
+- `slug` - route identifier generated from title
+- `type` - set to `content`
+- `xpReward` - XP awarded on completion
+- `order` - position inside module
+- `estimatedMinutes` - duration estimate
+- `language` - `en`, `pt-BR`, or `es`
+- `content` - portable text body (blocks, images, codeBlock, callout)
+- `videoUrl` (optional)
 
-## Creating Modules
+#### Challenge lesson (field-by-field)
+Set `type = challenge`, then configure:
+- `starterCode` - initial editor scaffold
+- `codeLanguage` - challenge language (`rust`, `typescript`, `javascript`)
+- `solutionCode` - internal reference solution
+- `expectedPatterns` - required code/output patterns
+- `hints` - progressive learner guidance
+- `testCases[]`:
+  - `description`
+  - `expectedOutput`
 
-1. Open Studio -> **Modules** -> **New Module**.
+### Step 2: Create Modules
+1. Go to Studio -> Modules -> New Module.
 2. Fill:
-   - `Title`
-   - `Description`
-   - `Module Order` (1-based position in course)
-3. Add lesson references in `Lessons` array.
-4. Save module.
-5. Go back to the Course and add this Module in its `Modules` array.
-6. Ensure module ordering is correct both in module `order` and course module list.
+   - `title`
+   - `description`
+   - `order`
+3. Add lesson references in `lessons[]`.
 
-## Creating Lessons
+Ordering behavior:
+- Module order is controlled by `module.order`.
+- Lesson order inside a module is controlled by `lesson.order`.
 
-Lessons support two types:
-- **Content lesson** (`type = content`)
-- **Challenge lesson** (`type = challenge`)
+### Step 3: Create the Course
+1. Go to Studio -> Courses -> New Course.
+2. Fill all course fields:
+   - `title`, `slug`, `description`
+   - `thumbnail` (+ `alt`)
+   - `difficulty`
+   - `duration`
+   - `xpReward`
+   - `track`
+   - `language`
+   - `order`
+3. Add module references in `modules[]`.
+4. Keep `isPublished = false` while editing/testing.
+5. Set `isPublished = true` only when ready.
 
-### Common fields (both types)
-- `Title`
-- `Slug`
-- `Lesson Type`
-- `XP Reward`
-- `Order`
-- `Estimated Minutes`
-- `Content Language`
+## Challenge Lesson Configuration
 
-### Content lesson flow
-1. Set `type = content`.
-2. Add Portable Text blocks under `Content`.
-3. Optional: set `videoUrl`.
-4. Save and preview in app lesson route.
+### expectedPatterns
+These are required strings/regex-like patterns that validator logic checks in learner submissions.
 
-### Challenge lesson flow
-1. Set `type = challenge`.
-2. Fill challenge fields:
-   - `starterCode` -> code scaffold shown in editor
-   - `codeLanguage` -> language for Monaco editor
-   - `solutionCode` -> internal reference solution
-   - `expectedPatterns` -> strings/regex markers for validator
-   - `hints` -> progressive hints
-   - `testCases[]`:
-     - `description`
-     - `expectedOutput`
-3. Save and test challenge behavior in the lesson page.
+```js
+// Student must use these in their code
+expectedPatterns: [
+  'SystemProgram.transfer',
+  'sendAndConfirmTransaction',
+  'new Transaction()'
+]
+```
 
-## Content Formatting
+Guidelines:
+- Keep patterns behavior-focused, not formatting-focused.
+- Avoid overly broad patterns that pass incorrect logic.
+- Pair with test cases for better reliability.
 
-The `content` field is Portable Text and supports:
+### testCases
+Each test case should describe expected behavior and output marker.
 
-- Rich text blocks (`Normal`, `H2`, `H3`, `H4`, `Quote`)
-- Inline formatting (`Bold`, `Italic`, `Code`)
-- Images (`alt`, `caption`)
-- Custom `Code Block` object
-- Custom `Callout` object (`info`, `warning`, `success`, `tip`)
+Good test case practices:
+- One behavior per test case.
+- Human-readable `description`.
+- Deterministic `expectedOutput`.
+- Cover happy path + at least one edge path pattern.
 
-### Code Blocks
-When adding a `Code Block` object:
-- Set `code`
-- Set `language` (`rust`, `typescript`, `javascript`, `shell`, `toml`)
-- Optional `filename`
-- Optional `highlightLines` (e.g. `3,7-9`)
+### hints
+Hints should be progressive:
+1. Concept reminder
+2. API/function nudge
+3. Near-solution structural hint
 
-### Callout Boxes
-Add `Callout` object and choose tone:
-- `info`
-- `warning`
-- `success`
-- `tip`
-
-Then set `text` content.
-
-### Images
-Add image blocks with:
-- `alt` for accessibility
-- `caption` for context (optional)
+Avoid giving final code directly in hint #1.
 
 ## Publishing Workflow
+Draft -> Test locally -> Publish
 
-1. Draft content with `isPublished = false`.
-2. Internal review:
-   - correctness
-   - challenge validation quality
-   - typo and formatting pass
-3. Set `isPublished = true` on the course.
-4. Save + publish.
-5. Verify on frontend:
-   - appears in `/courses`
-   - module/lesson order is correct
-   - challenge fields render correctly.
+Suggested checklist before publish:
+- Route loads (`/courses/[slug]`, lesson pages)
+- Challenge runs and validator feedback is meaningful
+- Ordering is correct
+- `isPublished` enabled
+
+## Importing the Mock Course
+```bash
+# The mock course is in src/sanity/seed/mockCourse.ts
+# To import via Sanity CLI:
+npx sanity dataset import
+```
+
+Note: adapt CLI arguments (`<file> <dataset>`) to your Sanity project setup.
 
 ## Content Schema Reference
 
-### Course (`course`)
+### Course Fields
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `title` | `string` | Yes | Course display title |
-| `slug` | `slug` | Yes | Unique route key |
-| `description` | `text` | No | Course summary |
-| `thumbnail` | `image` | No | Card/hero image |
-| `thumbnail.alt` | `string` | Yes (if image) | Accessibility alt text |
-| `difficulty` | `string` | Yes | `beginner/intermediate/advanced` |
-| `duration` | `number` | No | Estimated total minutes |
-| `xpReward` | `number` | Yes | Course completion XP bonus |
-| `track` | `string` | Yes | `fundamentals/defi/security/full-stack` |
-| `modules` | `array<reference(module)>` | No | Ordered module references |
-| `prerequisites` | `array<reference(course)>` | No | Recommended prior courses |
-| `isPublished` | `boolean` | No | Controls catalog visibility |
-| `language` | `string` | No | `en/pt-BR/es` |
-| `order` | `number` | No | Catalog sort priority |
+| Field | Type | Description |
+| --- | --- | --- |
+| `title` | `string` | Course title |
+| `slug` | `slug` | URL-safe course identifier |
+| `description` | `text` | Course summary |
+| `thumbnail` | `image` | Course image |
+| `thumbnail.alt` | `string` | Accessibility text |
+| `difficulty` | `string` | `beginner` / `intermediate` / `advanced` |
+| `duration` | `number` | Estimated total minutes |
+| `xpReward` | `number` | XP for full course completion |
+| `track` | `string` | `fundamentals` / `defi` / `security` / `full-stack` |
+| `modules` | `array<reference(module)>` | Ordered module references |
+| `prerequisites` | `array<reference(course)>` | Recommended prerequisite courses |
+| `isPublished` | `boolean` | Visibility flag in catalog |
+| `language` | `string` | Content language |
+| `order` | `number` | Display order in catalog |
 
-### Module (`module`)
+### Module Fields
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `title` | `string` | Yes | Module title |
-| `description` | `text` | No | Module summary |
-| `order` | `number` | Yes | Position inside course |
-| `lessons` | `array<reference(lesson)>` | No | Ordered lesson references |
+| Field | Type | Description |
+| --- | --- | --- |
+| `title` | `string` | Module title |
+| `description` | `text` | Module summary |
+| `order` | `number` | Position in parent course |
+| `lessons` | `array<reference(lesson)>` | Ordered lesson references |
 
-### Lesson (`lesson`)
+### Lesson Fields
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `title` | `string` | Yes | Lesson title |
-| `slug` | `slug` | Yes | Lesson route key |
-| `type` | `string` | Yes | `content` or `challenge` |
-| `xpReward` | `number` | Yes | XP awarded for completion |
-| `order` | `number` | No | Position within module |
-| `estimatedMinutes` | `number` | No | Time estimate |
-| `language` | `string` | No | `en/pt-BR/es` |
-| `content` | `array` | No | Portable Text content |
-| `videoUrl` | `url` | No | Optional embedded video |
-| `starterCode` | `text` | Challenge only | Initial code scaffold |
-| `codeLanguage` | `string` | Challenge only | Editor language |
-| `solutionCode` | `text` | Challenge only | Internal solution |
-| `expectedPatterns` | `array<string>` | Challenge only | Pattern checks |
-| `hints` | `array<string>` | Challenge only | Hint list |
-| `testCases` | `array<object>` | Challenge only | Validation cases |
-| `testCases[].description` | `string` | Yes | Human-readable expected behavior |
-| `testCases[].expectedOutput` | `string` | Yes | Pattern/output to match |
+| Field | Type | Description |
+| --- | --- | --- |
+| `title` | `string` | Lesson title |
+| `slug` | `slug` | Lesson identifier |
+| `type` | `string` | `content` or `challenge` |
+| `xpReward` | `number` | XP reward |
+| `order` | `number` | Order in module |
+| `estimatedMinutes` | `number` | Duration estimate |
+| `language` | `string` | Language (`en`, `pt-BR`, `es`) |
+| `content` | `array` | Portable text body |
+| `videoUrl` | `url` | Optional lesson video |
+| `starterCode` | `text` | Challenge scaffold |
+| `codeLanguage` | `string` | Challenge language |
+| `solutionCode` | `text` | Internal solution |
+| `expectedPatterns` | `array<string>` | Validation patterns |
+| `hints` | `array<string>` | Progressive hints |
+| `testCases` | `array<object>` | Challenge validation cases |

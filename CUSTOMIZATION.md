@@ -1,195 +1,157 @@
 # Customization Guide
 
-## Adding a New Language
+## Theme Colors
+All tokens are defined in `src/app/globals.css`.
 
-Current locales are defined in `src/i18n/routing.ts`:
-- `en`
-- `pt-BR`
-- `es`
+```css
+/* Change these to retheme the entire app */
+--color-background: #0A0A0F;
+--color-surface: #12121A;
+--color-surface-2: #1A1A2E;
+--color-border: #1E1E2E;
+--color-accent-cyan: #00D4FF;
+--color-accent-purple: #8B5CF6;
+--color-accent-green: #10B981;
+--color-xp: #F59E0B;
+```
 
-### Step 1: Add locale to routing
+Note: the actual mapped token in this codebase is `--color-surface-2` (with hyphen), not `--color-surface2`.
 
-Update `src/i18n/routing.ts`:
+## Adding a Language
+
+### Step 1: Add locale in routing
+File: `src/i18n/routing.ts`
 
 ```ts
 export const routing = defineRouting({
-  locales: ['en', 'pt-BR', 'es', 'fr'], // add new locale
+  locales: ['en', 'pt-BR', 'es', 'fr'],
   defaultLocale: 'en',
   localePrefix: 'always',
 });
 ```
 
-### Step 2: Create message file
+### Step 2: Add translation file
+Create: `src/messages/fr.json`
 
-Create `src/messages/[locale].json` (example: `src/messages/fr.json`) by copying `src/messages/en.json`.
+```bash
+cp src/messages/en.json src/messages/fr.json
+```
 
-### Step 3: Add option to language switcher
-
-Update locale options in `src/components/layout/navbar.tsx`:
+### Step 3: Add locale option in navbar switcher
+File: `src/components/layout/navbar.tsx`
 
 ```ts
 const LOCALE_OPTIONS = [
   { code: 'en', label: 'EN', flag: '🇺🇸' },
   { code: 'pt-BR', label: 'PT-BR', flag: '🇧🇷' },
   { code: 'es', label: 'ES', flag: '🇪🇸' },
-  { code: 'fr', label: 'FR', flag: '🇫🇷' }, // new
+  { code: 'fr', label: 'FR', flag: '🇫🇷' },
 ] as const;
 ```
 
 ### Step 4: Test locale routes
-
-Check all major routes under the new prefix:
+Verify:
 - `/fr`
 - `/fr/courses`
 - `/fr/dashboard`
 - `/fr/leaderboard`
-- `/fr/profile/...`
 - `/fr/settings`
 
-## Changing the Color Theme
+## Adding an Achievement
 
-Core design tokens are in `src/app/globals.css` under `:root` and mapped via `@theme inline`.
-
-Primary variables to update:
-- `--color-background`
-- `--color-surface`
-- `--color-accent-cyan`
-- `--color-accent-purple`
-
-### Full token list (current values)
-
-| CSS Variable | Current Value |
-| --- | --- |
-| `--background` | `#0A0A0F` |
-| `--surface` | `#12121A` |
-| `--surface-2` | `#1A1A2E` |
-| `--accent-cyan` | `#00D4FF` |
-| `--accent-purple` | `#8B5CF6` |
-| `--accent-green` | `#10B981` |
-| `--xp` | `#F59E0B` |
-| `--text-primary` | `#F1F5F9` |
-| `--text-secondary` | `#94A3B8` |
-| `--text-muted` | `#475569` |
-| `--border` | `#1E1E2E` |
-| `--ring` | `#00D4FF` |
-| `--primary` | `#00D4FF` |
-| `--accent` | `#8B5CF6` |
-
-After edits:
-1. Run `npm run dev`
-2. Visually test key screens (`home`, `courses`, `dashboard`, `lesson`)
-3. Verify text contrast and focus ring visibility.
-
-## Adding Achievement Types
-
-Achievement catalog is in `src/lib/achievements.ts`.
-
-### 1) Add definition to catalog
-
-Append a new entry to `ACHIEVEMENT_DEFINITIONS`:
+### 1. Add to achievements catalog
+File: `src/lib/achievements.ts` (`ACHIEVEMENT_DEFINITIONS`)
 
 ```ts
 {
-  id: 'challenge-20',
-  title: 'Challenge Specialist',
-  description: 'Complete 20 challenge lessons.',
-  iconUrl: '/badges/challenge-20.svg',
-  type: 'challenge',
-  requirement: 20,
-  xpReward: 150,
-  metric: 'courses', // or extend metric union
+  id: 'xp-5000',
+  title: 'Deep Builder',
+  description: 'Reach 5,000 XP total.',
+  iconUrl: '/badges/xp-5000.svg',
+  type: 'xp',
+  requirement: 5000,
+  xpReward: 300,
+  metric: 'xp',
 }
 ```
 
-### 2) Define unlock metric
+### 2. Define unlock condition
+Unlock conditions are derived in `getAchievementProgress()` by comparing metric value against `requirement`.
 
-`AchievementMetric` currently supports:
-- `xp`
-- `streak`
-- `courses`
+### 3. Achievement appears automatically in UI
+No additional wiring needed for standard achievements:
+- dashboard recent achievements
+- profile achievement grid
 
-If you need a new metric (e.g. `challenges`):
-1. Extend `AchievementMetric` union.
-2. Extend `getAchievementProgress()` input.
-3. Add matching branch in progress calculation.
+## Modifying XP Rewards
 
-### 3) Unlock logic
+Change XP values in:
+1. `src/lib/constants.ts` (global defaults)
+2. Sanity lesson/course fields (`xpReward`) for content-defined rewards
 
-Unlocking is derived in `getAchievementProgress()` (this is the current equivalent of `deriveAchievements()` in older docs/comments).
-
-### 4) UI integration
-
-No extra UI wiring is needed for standard achievements:
-- Dashboard recent achievements
-- Profile achievement showcase
-
-Both consume the same derived progress shape.
-
-## Adding Course Tracks
-
-### 1) Add track option in Sanity schema
-
-File: `src/sanity/schemas/course.ts`  
-Update `track` field `options.list`.
-
-### 2) Add track card in Learning Paths
-
-File: `src/components/sections/learning-paths.tsx`  
-Add a card for the new track slug/title/description.
-
-### 3) Add filter option in catalog
-
-File: `src/components/sections/course-catalog.tsx`  
-Update:
-- `TRACK_OPTIONS`
-- `trackLabel()` mapping
-- translation keys in `src/messages/*.json`
-
-### 4) Validate
-
-Test:
-- filter pills
-- URL param sync (`?track=...`)
-- course cards tags
-- translated labels across locales.
-
-## Extending the Gamification System
-
-### XP Formula
-
-Current constants (`src/lib/constants.ts`):
+Current constants:
 
 ```ts
 export const XP_PER_LESSON = 25 as const;
 export const XP_PER_COURSE = 500 as const;
-```
-
-### Modify rewards
-- Change constants in `src/lib/constants.ts`
-- If using DB functions (e.g. lesson completion RPC), keep values aligned there too
-- Re-test leaderboard and level-up behavior
-
-### Level Curve
-
-Current formula:
-
-```ts
 export const LEVEL_FORMULA = (xp: number): number =>
   Math.floor(Math.sqrt(xp / 100));
 ```
 
-This gives:
-- faster early levels
-- gradually slower progression at higher levels
+How the level formula works:
+```
+Level 1:  100 XP  (floor(sqrt(100/100))  = 1)
+Level 5:  2500 XP (floor(sqrt(2500/100)) = 5)
+Level 10: 10000 XP
+```
 
-### Adjusting the curve
+If you modify `LEVEL_FORMULA`, also validate:
+- `getLevelFromXP()` in `src/lib/utils.ts`
+- `getLevelProgress()` in `src/lib/utils.ts`
+- XP bar/level badge behavior across dashboard and profile.
 
-Examples:
-- Slower progression: increase divisor (`/ 150`, `/ 200`)
-- Faster progression: decrease divisor (`/ 80`)
-- Linear model: replace with `Math.floor(xp / N)` (not recommended for long-term pacing)
+## Adding a Course Track
 
-After changing level formula:
-1. Validate `getLevelFromXP()` and `getLevelProgress()` in `src/lib/utils.ts`
-2. Test XP bar behavior at level boundaries
-3. Check leaderboard level display consistency.
+### Step 1: Add track option in schema
+File: `src/sanity/schemas/course.ts`
+
+```ts
+options: {
+  list: [
+    { title: 'Fundamentals', value: 'fundamentals' },
+    { title: 'DeFi', value: 'defi' },
+    { title: 'Security', value: 'security' },
+    { title: 'Full-Stack', value: 'full-stack' },
+    { title: 'Mobile', value: 'mobile' }, // new
+  ],
+}
+```
+
+### Step 2: Add track card in UI
+File: `src/components/sections/learning-paths.tsx`
+- Add a new card entry for the new track.
+
+### Step 3: Add catalog filter mapping
+File: `src/components/sections/course-catalog.tsx`
+- Add to `TRACK_OPTIONS`
+- Add label mapping in `trackLabel()`
+- Add i18n keys to all `src/messages/*.json` files
+
+## Swapping to On-Chain Service
+
+This is the most important customization point.
+
+```typescript
+// src/services/index.ts
+// Change this one line:
+export const learningService =
+  new OnChainLearningProgressService()
+```
+
+Before switching, implement at minimum:
+1. `OnChainLearningProgressService` class implementing full `ILearningProgressService`.
+2. On-chain complete lesson flow (`CompleteLesson`) with XP mint CPI.
+3. Enrollment and progress reads from PDA/account data.
+4. Credential mint/finalization path.
+5. Indexing strategy (webhooks or worker) for leaderboard and profile responsiveness.
+6. Error/retry behavior parity with current local service.
