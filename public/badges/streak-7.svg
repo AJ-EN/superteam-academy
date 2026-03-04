@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="7 day streak badge">
+  <defs>
+    <linearGradient id="s7g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#s7g)"/>
+  <path d="M32 14c7 8 13 14 13 21 0 7.2-5.8 13-13 13s-13-5.8-13-13c0-7 6.4-13.7 13-21z" fill="#3f0b08"/>
+  <text x="32" y="38" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#fecaca" font-weight="700">7</text>
+</svg>

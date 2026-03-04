@@ -1,26 +1,211 @@
-@import "tailwindcss";
+/*
+ * Fonts loaded via next/font/google in layout.tsx (self-hosted, no extra HTTP request).
+ * Google Fonts fallback reference:
+ * https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap
+ */
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* ── App design tokens ───────────────────────────────────────────── */
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface:    var(--surface);
+  --color-surface-2:  var(--surface-2);
+
+  --color-accent-cyan:   var(--accent-cyan);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-green:  var(--accent-green);
+  --color-xp:            var(--xp);
+
+  --color-text-primary:   var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted:     var(--text-muted);
+
+  /* ── Fonts ───────────────────────────────────────────────────────── */
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+
+  /* ── shadcn / radix tokens ───────────────────────────────────────── */
+  --color-foreground:           var(--foreground);
+  --color-card:                 var(--card);
+  --color-card-foreground:      var(--card-foreground);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+  --color-chart-1:              var(--chart-1);
+  --color-chart-2:              var(--chart-2);
+  --color-chart-3:              var(--chart-3);
+  --color-chart-4:              var(--chart-4);
+  --color-chart-5:              var(--chart-5);
+  --color-sidebar:                      var(--sidebar);
+  --color-sidebar-foreground:           var(--sidebar-foreground);
+  --color-sidebar-primary:              var(--sidebar-primary);
+  --color-sidebar-primary-foreground:   var(--sidebar-primary-foreground);
+  --color-sidebar-accent:               var(--sidebar-accent);
+  --color-sidebar-accent-foreground:    var(--sidebar-accent-foreground);
+  --color-sidebar-border:               var(--sidebar-border);
+  --color-sidebar-ring:                 var(--sidebar-ring);
+
+  /* ── Radii ───────────────────────────────────────────────────────── */
+  --radius-sm:  calc(var(--radius) - 4px);
+  --radius-md:  calc(var(--radius) - 2px);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Dark-first design system variables ──────────────────────────────── */
+:root {
+  --radius: 0.5rem;
+
+  /* App tokens */
+  --background: #0A0A0F;
+  --surface:    #12121A;
+  --surface-2:  #1A1A2E;
+
+  --accent-cyan:   #00D4FF;
+  --accent-purple: #8B5CF6;
+  --accent-green:  #10B981;
+  --xp:            #F59E0B;
+
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted:     #475569;
+
+  /* shadcn tokens — mapped to our dark palette */
+  --foreground:           #F1F5F9;
+  --card:                 #12121A;
+  --card-foreground:      #F1F5F9;
+  --popover:              #12121A;
+  --popover-foreground:   #F1F5F9;
+  --primary:              #00D4FF;
+  --primary-foreground:   #0A0A0F;
+  --secondary:            #1A1A2E;
+  --secondary-foreground: #F1F5F9;
+  --muted:                #1A1A2E;
+  --muted-foreground:     #94A3B8;
+  --accent:               #8B5CF6;
+  --accent-foreground:    #F1F5F9;
+  --destructive:          oklch(0.704 0.191 22.216);
+  --border:               #1E1E2E;
+  --input:                #1E1E2E;
+  --ring:                 #00D4FF;
+  --chart-1:              #00D4FF;
+  --chart-2:              #10B981;
+  --chart-3:              #F59E0B;
+  --chart-4:              #8B5CF6;
+  --chart-5:              oklch(0.645 0.246 16.439);
+  --sidebar:                    #12121A;
+  --sidebar-foreground:         #F1F5F9;
+  --sidebar-primary:            #00D4FF;
+  --sidebar-primary-foreground: #0A0A0F;
+  --sidebar-accent:             #1A1A2E;
+  --sidebar-accent-foreground:  #F1F5F9;
+  --sidebar-border:             #1E1E2E;
+  --sidebar-ring:               #00D4FF;
+}
+
+/* .dark mirrors :root — next-themes applies this class; ensures correct values
+   after hydration and if a user ever toggles to explicit dark mode. */
+.dark {
+  --background: #0A0A0F;
+  --surface:    #12121A;
+  --surface-2:  #1A1A2E;
+
+  --accent-cyan:   #00D4FF;
+  --accent-purple: #8B5CF6;
+  --accent-green:  #10B981;
+  --xp:            #F59E0B;
+
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted:     #475569;
+
+  --foreground:           #F1F5F9;
+  --card:                 #12121A;
+  --card-foreground:      #F1F5F9;
+  --popover:              #12121A;
+  --popover-foreground:   #F1F5F9;
+  --primary:              #00D4FF;
+  --primary-foreground:   #0A0A0F;
+  --secondary:            #1A1A2E;
+  --secondary-foreground: #F1F5F9;
+  --muted:                #1A1A2E;
+  --muted-foreground:     #94A3B8;
+  --accent:               #8B5CF6;
+  --accent-foreground:    #F1F5F9;
+  --destructive:          oklch(0.704 0.191 22.216);
+  --border:               #1E1E2E;
+  --input:                #1E1E2E;
+  --ring:                 #00D4FF;
+  --chart-1:              #00D4FF;
+  --chart-2:              #10B981;
+  --chart-3:              #F59E0B;
+  --chart-4:              #8B5CF6;
+  --chart-5:              oklch(0.645 0.246 16.439);
+  --sidebar:                    #12121A;
+  --sidebar-foreground:         #F1F5F9;
+  --sidebar-primary:            #00D4FF;
+  --sidebar-primary-foreground: #0A0A0F;
+  --sidebar-accent:             #1A1A2E;
+  --sidebar-accent-foreground:  #F1F5F9;
+  --sidebar-border:             #1E1E2E;
+  --sidebar-ring:               #00D4FF;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-color: #0A0A0F; /* hard-coded fallback before CSS vars resolve */
+  }
+
+  /* ── Custom scrollbar (WebKit) ────────────────────────────────────── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0A0A0F;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1E1E2E;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2A2A3E;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1E1E2E #0A0A0F;
+  }
 }

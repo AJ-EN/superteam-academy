@@ -1,0 +1,10 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="XP 100 badge">
+  <defs>
+    <linearGradient id="xp100g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#xp100g)"/>
+  <path d="M21 43l8-11h-7l10-15-1 10h8L29 46l1-8h-9z" fill="#06202f"/>
+</svg>
